@@ -1,0 +1,81 @@
+# ==============================================================================
+# BASIC OAUTH CONFIGURATION (Required for OAuth)
+# ==============================================================================
+
+# OAuth domain for the provider
+# Required for Auth0 (domain is unique per account, e.g., "****.us.auth0.com")
+# Not required for other providers like Google
+#
+# Example:
+# OAUTH_DOMAIN="****.us.auth0.com"
+
+# OAuth client credentials obtained from your OAuth provider
+# These are required for OAuth authentication to work
+# - Get GitHub credentials at: https://github.com/settings/developers
+# - Get Google credentials at: https://console.cloud.google.com/apis/credentials
+# - Get Auth0 credentials from your Auth0 dashboard
+#
+# OAUTH_CLIENT_ID="your_oauth_client_id_here"
+# OAUTH_CLIENT_SECRET="your_oauth_client_secret_here"
+
+# ==============================================================================
+# ADVANCED OAUTH CONFIGURATION (Optional for enabling protected resource discovery endpoint)
+# ==============================================================================
+# The settings below are for custom OAuth providers or advanced configurations.
+# They enable metadata discovery per OAuth 2.0 specifications.
+# Most users can leave these empty as they auto-configure for standard providers.
+
+# OAuth 2.0 Protected Resource Metadata
+# Reference: RFC 9728 (/.well-known/oauth-protected-resource)
+# OAUTH_RESOURCE_URL: The base URL of your OAuth resource server
+# OAUTH_RESOURCE_NAME: Identifier for your resource server (used in authorization_servers)
+# OAUTH_AUTHORIZATION_URL: Authorization endpoint URL for the protected resource
+#   This is included in the OAuth Protected Resource Metadata discovery endpoint
+#   and tells clients where to send authorization requests
+#
+# Example:
+# OAUTH_RESOURCE_URL="https://api.github.com"
+# OAUTH_RESOURCE_NAME="github-api"
+# OAUTH_AUTHORIZATION_URL="https://github.com/login/oauth/authorize"
+
+# OAUTH_SERVICE_DOCUMENTATION_URL: URL to your OAuth service's documentation
+# OAUTH_SCOPES_SUPPORTED: Comma-separated list of OAuth scopes your service supports
+#   Example: OAUTH_SCOPES_SUPPORTED="read:user,write:user,admin"
+#
+# Example:
+# OAUTH_SERVICE_DOCUMENTATION_URL="https://developers.google.com/identity/protocols/oauth2"
+# OAUTH_SCOPES_SUPPORTED="openid,email,profile"
+
+# ==============================================================================
+# SECURITY CONFIGURATION
+# ==============================================================================
+
+# Allowed issuer hostnames for ID token validation
+# Used to permit non-HTTPS issuers during development/testing (e.g., HTTP-only services)
+# Format: Comma-separated list of hostnames without protocol
+# Note: "localhost" is always allowed by default
+# Example: ALLOWED_ISSUER_HOSTNAMES="dev.example.com,staging.example.com"
+# Production: Leave empty to enforce HTTPS-only issuers
+#
+# Example:
+# ALLOWED_ISSUER_HOSTNAMES="dev.example.com,staging.example.com"
+
+# Allowed CORS (Cross-Origin Resource Sharing) origins
+# Controls which domains can make requests to your server from browsers
+# Default: "*" (all origins allowed) - NOT RECOMMENDED for production
+# Format: Comma-separated list of full origin URLs including protocol
+# Example: ALLOWED_CORS_ORIGINS="https://example.com,https://app.example.com"
+# Production: ALWAYS set this to specific domains for security
+#
+# Example:
+# ALLOWED_CORS_ORIGINS="https://example.com,https://app.example.com"
+
+# DNS rebinding protection
+# Prevents DNS rebinding attacks by validating the Host header
+# Supported by the MCP SDK for enhanced security
+# Values: "true" (enable protection) or "false" (disable protection)
+# Recommended: "true" for production environments
+#
+# Example:
+# ENABLE_DNS_REBINDING_PROTECTION="true"
+

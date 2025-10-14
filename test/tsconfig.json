@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "isolatedModules": true,
+    "rootDirs": ["./", "../src"],
+    "noEmit": true,
+    "paths": {
+      "@rnaga/wp-mcp/*": ["../src/*"],
+      "_wp/*": ["./_wp/*"]
+    }
+  }
+}
