@@ -53,6 +53,9 @@ test("user tool MCP get ", async () => {
 
   expect(user).toBeDefined();
   expect(user.ID).toBe(1);
+
+  // Check user_pass is empty
+  expect(user.user_pass.length).toBe(0);
 });
 
 test("user tool MCP create and update, and delete", async () => {

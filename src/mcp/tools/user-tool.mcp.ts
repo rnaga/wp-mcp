@@ -7,6 +7,13 @@ import { Mcps } from "../mcps";
 import type * as types from "../../types";
 import { Mcp } from "../mcp";
 
+import type * as wpCoreTypes from "@rnaga/wp-node/types";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+
+type CallBackResult = Awaited<
+  ReturnType<Parameters<McpServer["registerTool"]>[2]>
+>;
+
 @mcp("user_tool", {
   description: "A tool to operate CRUD operations on WP users.",
   version: "1.0.0",
@@ -92,18 +99,30 @@ export class UserToolMcp implements Mcp {
               blogIds: [blogId],
             });
 
-        const user = await wp.utils.crud.user.get(input.ID, {
-          context: canEditUsers ? "edit" : "view",
-        });
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(user, null, 2),
-            },
-          ],
+        const returnValue = (user: any): CallBackResult => {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(user, null, 2),
+              },
+            ],
+          };
         };
+
+        if (canEditUsers) {
+          let user = await wp.utils.crud.user.get(input.ID, {
+            context: "edit",
+          });
+
+          // Unset user_pass
+          user.data.user_pass = "";
+
+          return returnValue(user);
+        }
+
+        const user = await wp.utils.crud.user.get(input.ID);
+        return returnValue(user);
       }
     );
 
