@@ -83,4 +83,4 @@ cd ./dist/
 npm publish --registry "$GITHUB_REGISTRY"  # --dry-run
 
 # publish to npm registry
-npm publish --registry "$NPM_REGISTRY" --access public --dry-run
+npm publish --registry "$NPM_REGISTRY" --access public # --dry-run

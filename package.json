@@ -1,6 +1,6 @@
 {
   "name": "@rnaga/wp-mcp",
-  "version": "0.0.42",
+  "version": "1.0.1",
   "description": "WordPress Model Context Protocol (MCP) implementation",
   "keywords": [
     "mcp",
