@@ -21,5 +21,11 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["src/cli/templates/**/*", "node_modules", "dist"]
+  "exclude": [
+    "src/cli/templates/**/*",
+    "node_modules",
+    "dist",
+    "src/_wp",
+    "src/http/index.ts"
+  ]
 }
