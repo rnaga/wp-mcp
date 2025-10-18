@@ -226,17 +226,6 @@ export class LocalCli extends Cli {
     const primitives = Object.values(defaultMcpPrimitives);
     Mcps.register(primitives);
 
-    // // Create WP Context
-    // const { wp } = await createLocalWPContext({
-    //   configFile,
-    //   username,
-    // });
-
-    // const mcpServer = Mcps.createServer();
-
-    // // Initialize MCP server (register primitives)
-    // await Mcps.initServer(mcpServer, wp, username);
-
     const mcpServer = await createLocalServer({
       configFile,
       username,
