@@ -49,7 +49,7 @@ if [ "$TARGET" = "beta" ]; then
     # This will create a version like 1.0.0-beta.0 and *-beta.1, etc.
     npm version prerelease --preid beta --no-git-tag-version
     # Prepare dist directory
-    cp package.json ./dist/
+    cp -f package.json ./dist/
 
     # publish to GitHub Packages
     cd ./dist/ 
@@ -73,7 +73,7 @@ fi
 npm version $VERSION_TYPE --no-git-tag-version
 
 # Copy package.json to dist 
-cp package.json ./dist/
+cp -f package.json ./dist/
 
 # Move to dist directory
 # This is where the package will be published from

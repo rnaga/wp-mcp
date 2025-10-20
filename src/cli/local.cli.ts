@@ -195,8 +195,29 @@ export class LocalCli extends Cli {
     description: "Start the local MCP (stdio) server",
   })
   public async start(program: Command) {
-    // npx @modelcontextprotocol/inspector -- npm run wp-mcp:dev --silent -- local start -f src/_wp/config/wp.json -u wp
-    // npx @modelcontextprotocol/inspector -- npx @rnaga/wp-mcp@latest -- local start -u wp
+    /**
+     * Usage Examples:
+     *
+     * Using MCP Inspector with development build:
+     *   npx @modelcontextprotocol/inspector -- npm run wp-mcp:dev --silent -- local start -f src/_wp/config/wp.json -u wp
+     *
+     * Using MCP Inspector with latest published version:
+     *   npx @modelcontextprotocol/inspector -- npx @rnaga/wp-mcp@latest -- local start -u wp
+     *
+     * Using environment variables:
+     *   LOCAL_USERNAME=wp-admin \
+     *   WP_DB_HOST=localhost \
+     *   WP_DB_PORT=3306 \
+     *   WP_DB_NAME=wordpress \
+     *   WP_DB_USER=wp_user \
+     *   WP_DB_PASSWORD=*** \
+     *   LOCAL_MULTISITE=false \
+     *   LOCAL_DEFAULT_BLOG_ID=1 \
+     *   LOCAL_DEFAULT_SITE_ID=1 \
+     *   LOCAL_SSL_ENABLED=false \
+     *   npx @rnaga/wp-mcp -- local start
+     */
+
     program
       .option("-f, --file", "Path to the WP config file")
       .option(

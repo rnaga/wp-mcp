@@ -1,0 +1,82 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.rnaga/wp-mcp",
+  "title": "WordPress MCP Server",
+  "description": "MCP server for WordPress. Manage posts, users, comments, terms, metadata, and settings.",
+  "version": "1.0.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@rnaga/wp-mcp",
+      "version": "1.0.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "LOCAL_USERNAME",
+          "description": "WordPress username to assume for capability checks",
+          "isRequired": true
+        },
+        {
+          "name": "WP_DB_HOST",
+          "description": "WordPress database host",
+          "isRequired": true
+        },
+        {
+          "name": "WP_DB_PORT",
+          "description": "WordPress database port",
+          "default": "3306"
+        },
+        {
+          "name": "WP_DB_NAME",
+          "description": "WordPress database name",
+          "isRequired": true
+        },
+        {
+          "name": "WP_DB_USER",
+          "description": "WordPress database user",
+          "isRequired": true
+        },
+        {
+          "name": "WP_DB_PASSWORD",
+          "description": "WordPress database password",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "LOCAL_MULTISITE",
+          "description": "Enable WordPress multisite mode",
+          "default": "false"
+        },
+        {
+          "name": "LOCAL_DEFAULT_BLOG_ID",
+          "description": "Default blog ID for multisite",
+          "default": "1"
+        },
+        {
+          "name": "LOCAL_DEFAULT_SITE_ID",
+          "description": "Default site ID for multisite",
+          "default": "1"
+        },
+        {
+          "name": "LOCAL_SSL_ENABLED",
+          "description": "Enable SSL for database connection",
+          "default": "false"
+        },
+        {
+          "name": "LOCAL_SSL_CA_FILEPATH",
+          "description": "Path to SSL CA certificate file"
+        },
+        {
+          "name": "LOCAL_SSL_CERT_FILEPATH",
+          "description": "Path to SSL certificate file"
+        },
+        {
+          "name": "LOCAL_SSL_KEY_FILEPATH",
+          "description": "Path to SSL key file"
+        }
+      ]
+    }
+  ]
+}

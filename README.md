@@ -459,3 +459,7 @@ const app = createHttpServer({
 ```
 
 Start the server (`npm run dev` locally or `npm start` after building) and the registered tools, resources, and prompts appear to any MCP client connected through the local proxy or HTTP transport.
+
+## MCP Registry
+
+This server is available in the [Model Context Protocol Registry](https://registry.modelcontextprotocol.io/), making it easily discoverable and installable by MCP clients.
