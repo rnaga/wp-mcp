@@ -18,22 +18,19 @@
 # Options:
 #   --dry-run           Validate and check everything without actually publishing
 #   --skip-validation   Skip JSON schema validation step
-#   --no-version-bump   Skip automatic version increment
 #
 # The script will:
-#   1. Automatically increment the patch version in server.json and package.json (unless --no-version-bump)
-#      Example: 1.0.0 → 1.0.1, 1.2.3 → 1.2.4
-#   2. Validate server.json against the MCP schema (unless --skip-validation is used)
-#   3. Check if you're authenticated with the registry
-#   4. Publish the server to the MCP registry (unless --dry-run is used)
+#   1. Validate server.json against the MCP schema (unless --skip-validation is used)
+#   2. Check if you're authenticated with the registry
+#   3. Publish the server to the MCP registry (unless --dry-run is used)
 #
+# Note: Version must be manually updated in server.json and package.json before publishing.
 # Note: This script does NOT publish to npm. Use ./scripts/release.sh for npm publishing.
 
 set -e  # Exit on error
 
 SKIP_VALIDATION=false
 DRY_RUN=false
-NO_VERSION_BUMP=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -46,13 +43,9 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN=true
       shift
       ;;
-    --no-version-bump)
-      NO_VERSION_BUMP=true
-      shift
-      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 [--dry-run] [--skip-validation] [--no-version-bump]"
+      echo "Usage: $0 [--dry-run] [--skip-validation]"
       exit 1
       ;;
   esac
@@ -82,28 +75,6 @@ print_info() {
   echo -e "${BLUE}ℹ${NC} $1"
 }
 
-# Function to increment patch version
-increment_patch_version() {
-  local version=$1
-  local major minor patch
-
-  # Parse version (supports X.Y.Z format)
-  if [[ $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-    major="${BASH_REMATCH[1]}"
-    minor="${BASH_REMATCH[2]}"
-    patch="${BASH_REMATCH[3]}"
-    echo "$major.$minor.$((patch + 1))"
-  elif [[ $version =~ ^([0-9]+)\.([0-9]+)$ ]]; then
-    # If version is X.Y, treat it as X.Y.0 and increment to X.Y.1
-    major="${BASH_REMATCH[1]}"
-    minor="${BASH_REMATCH[2]}"
-    echo "$major.$minor.1"
-  else
-    print_error "Invalid version format: $version (expected X.Y.Z or X.Y)"
-    exit 1
-  fi
-}
-
 # Print dry-run banner if in dry-run mode
 if [ "$DRY_RUN" = true ]; then
   echo ""
@@ -130,51 +101,10 @@ fi
 print_status "Found package.json"
 
 # Extract current version from server.json
-CURRENT_VERSION=$(grep -o '"version": *"[^"]*"' server.json | head -1 | cut -d'"' -f4)
+SERVER_VERSION=$(grep -o '"version": *"[^"]*"' server.json | head -1 | cut -d'"' -f4)
 SERVER_NAME=$(grep -o '"name": *"[^"]*"' server.json | head -1 | cut -d'"' -f4)
 
-# Increment version unless --no-version-bump is set
-if [ "$NO_VERSION_BUMP" = false ]; then
-  echo ""
-  echo "Incrementing patch version..."
-  NEW_VERSION=$(increment_patch_version "$CURRENT_VERSION")
-
-  print_info "Current version: $CURRENT_VERSION"
-  print_info "New version: $NEW_VERSION"
-
-  # Check if jq is available
-  if ! command -v jq &> /dev/null; then
-    print_error "jq is required for version updates but not found"
-    echo ""
-    echo "Install jq:"
-    echo "  macOS: brew install jq"
-    echo "  Linux: sudo apt-get install jq"
-    echo ""
-    exit 1
-  fi
-
-  # Update version in files (skip if dry-run)
-  if [ "$DRY_RUN" = false ]; then
-    # Create a temporary file for jq processing
-    TMP_FILE=$(mktemp)
-
-    # Update all version fields in server.json
-    jq --arg v "$NEW_VERSION" '.version = $v | .packages[0].version = $v' server.json > "$TMP_FILE" && mv "$TMP_FILE" server.json
-
-    # Update version in package.json
-    jq --arg v "$NEW_VERSION" '.version = $v' package.json > "$TMP_FILE" && mv "$TMP_FILE" package.json
-
-    print_status "Updated version to $NEW_VERSION in server.json and package.json"
-  else
-    print_info "Would update version to $NEW_VERSION (dry-run mode)"
-  fi
-
-  SERVER_VERSION="$NEW_VERSION"
-else
-  print_warning "Skipping version bump (--no-version-bump flag set)"
-  SERVER_VERSION="$CURRENT_VERSION"
-fi
-
+echo ""
 print_info "Server: $SERVER_NAME"
 print_info "Version: $SERVER_VERSION"
 
