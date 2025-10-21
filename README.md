@@ -465,6 +465,6 @@ Start the server (`npm run dev` locally or `npm start` after building) and the r
 This server is published to the [Model Context Protocol Registry](https://registry.modelcontextprotocol.io/), making it easily discoverable and installable by MCP clients.
 
 You can find the server at:
-**https://registry.modelcontextprotocol.io/v0/servers?search=wp-mcp**
+**https://registry.modelcontextprotocol.io/v0/servers?search=wp-mcp&version=latest**
 
 The registry entry includes configuration details, required environment variables, and installation instructions.
