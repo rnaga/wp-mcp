@@ -1,6 +1,6 @@
 {
   "name": "@rnaga/wp-mcp",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "WordPress Model Context Protocol (MCP) implementation",
   "mcpName": "io.github.rnaga/wp-mcp",
   "keywords": [
@@ -14,7 +14,7 @@
   "license": "MIT",
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest",
-    "build": "rm -rf ./dist && tsc && npm run copyfiles && npm run copy-http-template && cp package.json dist/package.json && rm -rf ./dist/_wp",
+    "build": "rm -rf ./dist && tsc && npm run copyfiles && npm run copy-http-template && rm -rf ./dist/_wp",
     "clean": "tsc --build --clean",
     "copyfiles": "copyfiles -u 1 \"src/**/*.d.ts\" dist",
     "copy-http-template": "rsync -avz --delete ./src/cli/templates/ dist/cli/templates/",

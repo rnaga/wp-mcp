@@ -3,12 +3,36 @@
   "name": "io.github.rnaga/wp-mcp",
   "title": "WordPress MCP Server",
   "description": "MCP server for WordPress. Manage posts, users, comments, terms, metadata, and settings.",
-  "version": "1.0.3",
+  "version": "1.0.4",
+  "repository": {
+    "url": "https://github.com/rnaga/wp-mcp",
+    "source": "github"
+  },
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@rnaga/wp-mcp",
-      "version": "1.0.3",
+      "version": "1.0.4",
+      "runtimeHint": "npx",
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "-y",
+          "description": "Automatically confirm npx package installation"
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "local",
+          "description": "Command to run (local, remote, http, utils)"
+        },
+        {
+          "type": "positional",
+          "value": "start",
+          "description": "Subcommand to start the local MCP server"
+        }
+      ],
       "transport": {
         "type": "stdio"
       },
