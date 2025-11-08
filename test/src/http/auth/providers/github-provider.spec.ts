@@ -22,7 +22,7 @@ test("GitHubProvider - should create instance with correct config", () => {
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GitHubProvider();
+  const provider = GitHubProvider.getInstance();
 
   expect(provider).toBeInstanceOf(GitHubProvider);
 });
@@ -41,7 +41,7 @@ test("GitHubProvider - should fetch user info and cache it", async () => {
     json: jest.fn().mockResolvedValue(mockUserData),
   } as any);
 
-  const provider = new GitHubProvider();
+  const provider = GitHubProvider.getInstance();
   const result = await (provider as any).fetchUserInfo("token123");
 
   expect(result).toEqual({
@@ -51,12 +51,9 @@ test("GitHubProvider - should fetch user info and cache it", async () => {
     name: "Test User",
     ttl: 7200,
   });
-  expect(mockAuthSession.set).toHaveBeenCalledWith(
-    "oauth",
-    "token123",
-    expect.objectContaining({ email: "user@github.com" }),
-    7200
-  );
+  // fetchUserInfo should NOT call authSession.set directly
+  // The base class authenticate() method handles caching via storeToken()
+  expect(mockAuthSession.set).not.toHaveBeenCalled();
 });
 
 test("GitHubProvider - should throw error when fetch fails", async () => {
@@ -67,11 +64,11 @@ test("GitHubProvider - should throw error when fetch fails", async () => {
     status: 401,
   } as any);
 
-  const provider = new GitHubProvider();
+  const provider = GitHubProvider.getInstance();
 
-  await expect((provider as any).fetchUserInfo("invalid-token")).rejects.toThrow(
-    "Failed to fetch user info"
-  );
+  await expect(
+    (provider as any).fetchUserInfo("invalid-token")
+  ).rejects.toThrow("Failed to fetch user info");
 });
 
 test("GitHubProvider - should build token params with client id", async () => {
@@ -81,7 +78,7 @@ test("GitHubProvider - should build token params with client id", async () => {
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GitHubProvider();
+  const provider = GitHubProvider.getInstance();
   const params = await (provider as any).buildTokenParams("device123");
 
   expect(params).toEqual({
@@ -96,7 +93,7 @@ test("GitHubProvider - should throw error when missing client id", async () => {
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GitHubProvider();
+  const provider = GitHubProvider.getInstance();
 
   await expect((provider as any).buildTokenParams("device123")).rejects.toThrow(
     "Missing client ID for GitHub"
@@ -107,7 +104,7 @@ test("GitHubProvider - should validate device polling response correctly", () =>
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GitHubProvider();
+  const provider = GitHubProvider.getInstance();
   const validResponse = { status: 200 } as any;
   const invalidResponse = { status: 400 } as any;
   const tokenBody = { access_token: "token123" };
@@ -136,11 +133,13 @@ test("GitHubProvider - should revoke token successfully", async () => {
     text: jest.fn().mockResolvedValue(""),
   } as any);
 
-  const provider = new GitHubProvider();
+  const provider = GitHubProvider.getInstance();
   const result = await (provider as any).fetchRevoke("token123");
 
   expect(result).toBe(true);
-  expect(mockAuthSession.remove).toHaveBeenCalledWith("oauth", "token123");
+  // fetchRevoke should NOT call authSession.remove directly
+  // The base class revokeToken() method handles removing from cache
+  expect(mockAuthSession.remove).not.toHaveBeenCalled();
 });
 
 test("GitHubProvider - should throw error when revoking without client id", async () => {
@@ -148,7 +147,7 @@ test("GitHubProvider - should throw error when revoking without client id", asyn
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GitHubProvider();
+  const provider = GitHubProvider.getInstance();
 
   await expect((provider as any).fetchRevoke("token123")).rejects.toThrow(
     "Missing client ID for GitHub"

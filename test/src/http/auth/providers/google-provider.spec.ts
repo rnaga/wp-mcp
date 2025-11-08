@@ -22,7 +22,7 @@ test("GoogleProvider - should create instance with correct config", () => {
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GoogleProvider();
+  const provider = GoogleProvider.getInstance();
 
   expect(provider).toBeInstanceOf(GoogleProvider);
 });
@@ -40,7 +40,7 @@ test("GoogleProvider - should fetch user info and cache it", async () => {
     json: jest.fn().mockResolvedValue(mockUserData),
   } as any);
 
-  const provider = new GoogleProvider();
+  const provider = GoogleProvider.getInstance();
   const result = await (provider as any).fetchUserInfo("token123");
 
   expect(result).toEqual({
@@ -50,12 +50,9 @@ test("GoogleProvider - should fetch user info and cache it", async () => {
     name: "Test User",
     ttl: 3600,
   });
-  expect(mockAuthSession.set).toHaveBeenCalledWith(
-    "oauth",
-    "token123",
-    expect.objectContaining({ email: "user@google.com" }),
-    3600
-  );
+  // fetchUserInfo should NOT call authSession.set directly
+  // The base class authenticate() method handles caching via storeToken()
+  expect(mockAuthSession.set).not.toHaveBeenCalled();
 });
 
 test("GoogleProvider - should build token params with client credentials", async () => {
@@ -66,7 +63,7 @@ test("GoogleProvider - should build token params with client credentials", async
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GoogleProvider();
+  const provider = GoogleProvider.getInstance();
   const params = await (provider as any).buildTokenParams("device123");
 
   expect(params).toEqual({
@@ -82,7 +79,7 @@ test("GoogleProvider - should throw error when missing credentials", async () =>
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GoogleProvider();
+  const provider = GoogleProvider.getInstance();
 
   await expect((provider as any).buildTokenParams("device123")).rejects.toThrow(
     "Missing client ID or client secret for Google"
@@ -93,7 +90,7 @@ test("GoogleProvider - should validate device polling response correctly", () =>
   const mockAuthSession = { get: jest.fn(), set: jest.fn(), remove: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new GoogleProvider();
+  const provider = GoogleProvider.getInstance();
   const validResponse = { status: 200 } as any;
   const pendingResponse400 = { status: 400 } as any;
   const pendingResponse428 = { status: 428 } as any;
@@ -128,9 +125,11 @@ test("GoogleProvider - should revoke token successfully", async () => {
     text: jest.fn().mockResolvedValue(""),
   } as any);
 
-  const provider = new GoogleProvider();
+  const provider = GoogleProvider.getInstance();
   const result = await (provider as any).fetchRevoke("token123");
 
   expect(result).toBe(true);
-  expect(mockAuthSession.remove).toHaveBeenCalledWith("oauth", "token123");
+  // fetchRevoke should NOT call authSession.remove directly
+  // The base class revokeToken() method handles removing from cache
+  expect(mockAuthSession.remove).not.toHaveBeenCalled();
 });

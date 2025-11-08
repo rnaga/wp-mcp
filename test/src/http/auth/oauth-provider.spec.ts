@@ -1,18 +1,24 @@
 import { OAuthProvider } from "../../../../src/http/auth/oauth-provider";
 import { getAuthSession } from "../../../../src/http/session/auth-session";
 import { getEnv } from "../../../../src/http/env";
-import fetch from "node-fetch";
+import * as fetchModule from "../../../../src/fetch";
 
 jest.mock("../../../../src/http/session/auth-session");
 jest.mock("../../../../src/http/env");
-jest.mock("node-fetch");
+jest.mock("../../../../src/fetch");
 jest.mock("../../../../src/logger");
 
 const mockGetAuthSession = getAuthSession as jest.MockedFunction<
   typeof getAuthSession
 >;
 const mockGetEnv = getEnv as jest.MockedFunction<typeof getEnv>;
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+const mockFetch = fetchModule.default as jest.MockedFunction<typeof fetchModule.default>;
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  // Reset singleton instance
+  (TestOAuthProvider as any).instance = null;
+});
 
 class TestOAuthProvider extends OAuthProvider {
   protected providerName = "test";
@@ -23,6 +29,23 @@ class TestOAuthProvider extends OAuthProvider {
     userInfoUrl: "https://test.com/userinfo",
     scopes: ["read", "write"],
   };
+
+  static getInstance(): OAuthProvider {
+    if (!TestOAuthProvider.instance) {
+      TestOAuthProvider.instance = new TestOAuthProvider();
+    }
+    return TestOAuthProvider.instance;
+  }
+
+  protected async fetchUserInfo(accessTokenString: string) {
+    // Mock implementation for testing
+    return {
+      type: "oauth" as const,
+      ttl: 3600,
+      username: "testuser",
+      email: "test@example.com",
+    };
+  }
 
   protected async buildTokenParams(deviceCode: string) {
     return { device_code: deviceCode, grant_type: "device_code" };
@@ -37,7 +60,7 @@ test("should create OAuthProvider instance", () => {
   const mockAuthSession = { get: jest.fn(), set: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new TestOAuthProvider();
+  const provider = TestOAuthProvider.getInstance();
   expect(provider).toBeInstanceOf(OAuthProvider);
 });
 
@@ -63,7 +86,7 @@ test("should authenticate with cached user info", async () => {
     },
   } as any;
 
-  const provider = new TestOAuthProvider();
+  const provider = TestOAuthProvider.getInstance();
   const result = await provider.authenticate(mockWp, "token123");
 
   expect(result).toEqual(mockWpUser);
@@ -75,14 +98,19 @@ test("should return undefined when user has no email", async () => {
     type: "oauth" as const,
     ttl: 3600,
     username: "testuser",
+    // No email field
   };
   const mockAuthSession = {
-    get: jest.fn().mockResolvedValue(mockUserInfo),
+    get: jest.fn().mockResolvedValue(null), // No cached user info
     set: jest.fn(),
   };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new TestOAuthProvider();
+  const provider = TestOAuthProvider.getInstance();
+
+  // Spy on fetchUserInfo to return user info without email
+  jest.spyOn(provider as any, 'fetchUserInfo').mockResolvedValue(mockUserInfo);
+
   const result = await provider.authenticate({} as any, "token123");
 
   expect(result).toBeUndefined();
@@ -104,7 +132,7 @@ test("should request device code successfully", async () => {
   const mockAuthSession = { get: jest.fn(), set: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new TestOAuthProvider();
+  const provider = TestOAuthProvider.getInstance();
   const result = await provider.requestDeviceCode();
 
   expect(result).toEqual(mockDeviceCode);
@@ -119,7 +147,7 @@ test("should throw error when requesting device code without client ID", async (
   const mockAuthSession = { get: jest.fn(), set: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new TestOAuthProvider();
+  const provider = TestOAuthProvider.getInstance();
 
   await expect(provider.requestDeviceCode()).rejects.toThrow(
     "Client ID is not set"
@@ -130,7 +158,7 @@ test("should check if token is expired", () => {
   const mockAuthSession = { get: jest.fn(), set: jest.fn() };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new TestOAuthProvider();
+  const provider = TestOAuthProvider.getInstance();
   const futureToken = {
     access_token: "token",
     expires_at: Date.now() + 10 * 60 * 1000,
@@ -153,7 +181,7 @@ test("should store token in auth session", async () => {
   };
   mockGetAuthSession.mockReturnValue(mockAuthSession as any);
 
-  const provider = new TestOAuthProvider();
+  const provider = TestOAuthProvider.getInstance();
   const accessToken = {
     access_token: "token123",
     expires_at: Date.now() + 3600000,

@@ -103,9 +103,6 @@ export class GoogleProvider extends OAuthProvider {
 
     logger.debug("Revoke response status:", result.status, await result.text());
 
-    // Remove token from cache
-    await this.authSessions.remove("oauth", accessTokenString);
-
     return result.status === 200;
   }
 }

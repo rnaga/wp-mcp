@@ -21,7 +21,13 @@ export class Auth0Provider extends OAuthProvider {
 
   static getInstance(): OAuthProvider {
     if (!Auth0Provider.instance) {
-      Auth0Provider.instance = new Auth0Provider();
+      try {
+        Auth0Provider.instance = new Auth0Provider();
+      } catch (error) {
+        // Reset instance on error so subsequent calls will retry
+        Auth0Provider.instance = null as any;
+        throw error;
+      }
     }
     return Auth0Provider.instance;
   }
@@ -32,6 +38,11 @@ export class Auth0Provider extends OAuthProvider {
     const env = getEnv();
     if (!env.authDomain) {
       throw new Error("Missing AUTH_DOMAIN environment variable");
+    }
+
+    // Check domain and throw error if it doesn't contain "auth0.com"
+    if (!env.authDomain.includes("auth0.com")) {
+      throw new Error("AUTH_DOMAIN must be an Auth0 domain");
     }
 
     // Replace AUTH_DOMAIN in URLs
@@ -123,9 +134,6 @@ export class Auth0Provider extends OAuthProvider {
     });
 
     logger.debug("Revoke response status:", result.status, await result.text());
-
-    // Remove token from cache
-    await this.authSessions.remove("oauth", accessTokenString);
 
     return result.status === 200;
   }
