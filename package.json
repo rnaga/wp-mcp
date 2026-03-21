@@ -1,6 +1,6 @@
 {
   "name": "@rnaga/wp-mcp",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "WordPress Model Context Protocol (MCP) implementation",
   "mcpName": "io.github.rnaga/wp-mcp",
   "keywords": [
@@ -19,6 +19,7 @@
     "copyfiles": "copyfiles -u 1 \"src/**/*.d.ts\" dist",
     "copy-http-template": "rsync -avz --delete ./src/cli/templates/ dist/cli/templates/",
     "inspect": "export NODE_EXTRA_CA_CERTS=\"$(mkcert -CAROOT)/rootCA.pem\" && npx @modelcontextprotocol/inspector",
+    "inspect:dev": "DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector --transport stdio -- npx ts-node src/cli/index.ts local start -u",
     "start:express": "npx ts-node src/http/index.ts",
     "wp-mcp:dev": "npx ts-node src/cli/index.ts",
     "wp-mcp": "node dist/cli/index.js",
@@ -45,6 +46,9 @@
   "bin": {
     "wp-mcp": "./cli/index.js"
   },
+  "exports": {
+    "./decorators": "./dist/decorators/index.js"
+  },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
@@ -56,6 +60,7 @@
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.2"
   },
   "repository": {

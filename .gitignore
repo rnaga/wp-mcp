@@ -17,6 +17,7 @@ secrets.db
 ssl-certs
 _wp
 claude_desktop_config.json
+mcp.json
 .claude
 examples.org
 .mcpregistry*

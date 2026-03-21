@@ -3,7 +3,7 @@
   "name": "io.github.rnaga/wp-mcp",
   "title": "WordPress MCP Server",
   "description": "MCP server for WordPress. Manage posts, users, comments, terms, metadata, and settings.",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "repository": {
     "url": "https://github.com/rnaga/wp-mcp",
     "source": "github"
@@ -12,7 +12,7 @@
     {
       "registryType": "npm",
       "identifier": "@rnaga/wp-mcp",
-      "version": "1.0.6",
+      "version": "1.0.8",
       "runtimeHint": "npx",
       "runtimeArguments": [
         {

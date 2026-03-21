@@ -45,14 +45,33 @@ cp ./README.md ./dist/
 # This will create a version like 1.0.0-beta.0 and *-
 # and publish to GitHub Packages only
 if [ "$TARGET" = "beta" ]; then
-    # bump version with pre-release identifier 
+    # bump version with pre-release identifier
     # This will create a version like 1.0.0-beta.0 and *-beta.1, etc.
     npm version prerelease --preid beta --no-git-tag-version
+    # Sync version to server.json
+    NEW_VERSION=$(node -p "require('./package.json').version")
+    if [ -f "server.json" ]; then
+      node -e "
+        const fs = require('fs');
+        const s = JSON.parse(fs.readFileSync('server.json', 'utf8'));
+        s.version = '${NEW_VERSION}';
+        s.packages[0].version = '${NEW_VERSION}';
+        fs.writeFileSync('server.json', JSON.stringify(s, null, 2) + '\n');
+      "
+      echo "Updated server.json to version ${NEW_VERSION}"
+    fi
     # Prepare dist directory
     cp -f package.json ./dist/
+    # Fix exports paths for published package (dist/ is the package root when published)
+    node -e "
+      const fs = require('fs');
+      const p = JSON.parse(fs.readFileSync('./dist/package.json', 'utf8'));
+      p.exports = { './decorators': './decorators/index.js' };
+      fs.writeFileSync('./dist/package.json', JSON.stringify(p, null, 2) + '\n');
+    "
 
     # publish to GitHub Packages
-    cd ./dist/ 
+    cd ./dist/
     npm publish --registry "$GITHUB_REGISTRY" --tag beta # --dry-run
     exit 0
 fi
@@ -72,8 +91,28 @@ fi
 # Bump version based on VERSION_TYPE
 npm version $VERSION_TYPE --no-git-tag-version
 
-# Copy package.json to dist 
+# Sync version to server.json
+NEW_VERSION=$(node -p "require('./package.json').version")
+if [ -f "server.json" ]; then
+  node -e "
+    const fs = require('fs');
+    const s = JSON.parse(fs.readFileSync('server.json', 'utf8'));
+    s.version = '${NEW_VERSION}';
+    s.packages[0].version = '${NEW_VERSION}';
+    fs.writeFileSync('server.json', JSON.stringify(s, null, 2) + '\n');
+  "
+  echo "Updated server.json to version ${NEW_VERSION}"
+fi
+
+# Copy package.json to dist
 cp -f package.json ./dist/
+# Fix exports paths for published package (dist/ is the package root when published)
+node -e "
+  const fs = require('fs');
+  const p = JSON.parse(fs.readFileSync('./dist/package.json', 'utf8'));
+  p.exports = { './decorators': './decorators/index.js' };
+  fs.writeFileSync('./dist/package.json', JSON.stringify(p, null, 2) + '\n');
+"
 
 # Move to dist directory
 # This is where the package will be published from

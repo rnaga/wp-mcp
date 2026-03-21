@@ -50,8 +50,9 @@ export class Mcps {
       throw new Error("No current user in context");
     }
 
-    // Get the current blogId
-    const blogId = wp.current.blogId;
+    // Get the current blogId (wp-node returns 0 for single-site, but capability
+    // checks require blogId 1 which is the default WordPress blog)
+    const blogId = wp.current.blogId || 1;
 
     // Register all MCPs
     for (const [name, clazz] of Mcps.map) {
@@ -83,6 +84,9 @@ export class Mcps {
 
         if (Array.isArray(roles) && roles.length > 0) {
           const userRoles = await wp.current.user?.roles();
+          mcpLogger.debug(
+            `Checking roles for ${propertyKey}: required=${JSON.stringify(roles)}, userRoles=${JSON.stringify(userRoles)}`
+          );
           const hasRole = roles?.some((role) => userRoles?.includes(role));
           if (!hasRole) {
             mcpLogger.debug(
@@ -106,6 +110,10 @@ export class Mcps {
             {
               blogIds: [blogId],
             }
+          );
+
+          mcpLogger.debug(
+            `Checking capabilities for ${propertyKey}: required=${JSON.stringify(capabilities)}, blogId=${blogId}, hasCapabilities=${hasCapabilities}`
           );
 
           // Skip if user lacks capabilities
