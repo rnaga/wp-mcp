@@ -1,11 +1,15 @@
-jest.mock("node-fetch");
+jest.mock("../../../src/fetch");
 jest.mock("../../../src/secret-store");
 jest.mock("../../../src/logger");
 
 import { McpProxy } from "@rnaga/wp-mcp/proxy/mcp-proxy";
-import fetch from "node-fetch";
+import fetch from "../../../src/fetch";
 import { getSecret } from "../../../src/secret-store";
 
+// McpProxy calls the local `../fetch` wrapper (which resolves to native
+// fetch or node-fetch under the hood), not node-fetch directly. Mocking
+// node-fetch here would miss real calls when native fetch is available,
+// so the wrapper module itself is mocked instead.
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
 beforeEach(() => {
@@ -240,6 +244,173 @@ test("should throw error when JSON-RPC response contains error", async () => {
   await expect(
     (proxy as any).forwardRequest("test/method")
   ).rejects.toThrow("Invalid request");
+});
+
+test("should parse SSE-formatted response body", async () => {
+  const config = {
+    remoteUrl: "https://example.com/mcp",
+    authType: "password" as const,
+    username: "user",
+    password: "pass",
+  };
+
+  const proxy = new McpProxy(config);
+
+  mockFetch.mockResolvedValue({
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    text: jest.fn().mockResolvedValue(
+      `event: message\ndata: ${JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        result: { tools: ["sse-tool"] },
+      })}\n\n`
+    ),
+    headers: {
+      get: jest.fn().mockReturnValue(null),
+    },
+  } as any);
+
+  const result = await (proxy as any).forwardRequest("tools/list");
+
+  expect(result.jsonResponse).toEqual({ tools: ["sse-tool"] });
+});
+
+test("should throw error when response body is empty", async () => {
+  const config = {
+    remoteUrl: "https://example.com/mcp",
+    authType: "password" as const,
+    username: "user",
+    password: "pass",
+  };
+
+  const proxy = new McpProxy(config);
+
+  mockFetch.mockResolvedValue({
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    text: jest.fn().mockResolvedValue(""),
+    headers: {
+      get: jest.fn().mockReturnValue(null),
+    },
+  } as any);
+
+  await expect(
+    (proxy as any).forwardRequest("test/method")
+  ).rejects.toThrow("Empty response body");
+});
+
+test("should throw error when response body is not valid JSON", async () => {
+  const config = {
+    remoteUrl: "https://example.com/mcp",
+    authType: "password" as const,
+    username: "user",
+    password: "pass",
+  };
+
+  const proxy = new McpProxy(config);
+
+  mockFetch.mockResolvedValue({
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    text: jest.fn().mockResolvedValue("{not valid json"),
+    headers: {
+      get: jest.fn().mockReturnValue(null),
+    },
+  } as any);
+
+  await expect(
+    (proxy as any).forwardRequest("test/method")
+  ).rejects.toThrow("Failed to parse JSON");
+});
+
+test("should throw error when response body fails JSON-RPC schema validation", async () => {
+  const config = {
+    remoteUrl: "https://example.com/mcp",
+    authType: "password" as const,
+    username: "user",
+    password: "pass",
+  };
+
+  const proxy = new McpProxy(config);
+
+  mockFetch.mockResolvedValue({
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    // Missing required "jsonrpc" field
+    text: jest.fn().mockResolvedValue(JSON.stringify({ id: 1, result: {} })),
+    headers: {
+      get: jest.fn().mockReturnValue(null),
+    },
+  } as any);
+
+  await expect(
+    (proxy as any).forwardRequest("test/method")
+  ).rejects.toThrow("Invalid JSON-RPC response");
+});
+
+test("should fetch secret only once and reuse it across requests", async () => {
+  const config = {
+    remoteUrl: "https://example.com/mcp",
+    authType: "oauth" as const,
+  };
+
+  (getSecret as jest.Mock).mockResolvedValue({
+    remote: {
+      oauth: {
+        access_token: "cached-oauth-token",
+      },
+    },
+  });
+
+  const proxy = new McpProxy(config);
+
+  mockFetch.mockResolvedValue(createMockResponse({ ok: true }) as any);
+
+  await (proxy as any).forwardRequest("tools/list");
+  await (proxy as any).forwardRequest("tools/list");
+
+  expect(getSecret).toHaveBeenCalledTimes(1);
+  expect(mockFetch).toHaveBeenNthCalledWith(
+    1,
+    "https://example.com/mcp",
+    expect.objectContaining({
+      headers: expect.objectContaining({
+        Authorization: "Bearer cached-oauth-token",
+      }),
+    })
+  );
+  expect(mockFetch).toHaveBeenNthCalledWith(
+    2,
+    "https://example.com/mcp",
+    expect.objectContaining({
+      headers: expect.objectContaining({
+        Authorization: "Bearer cached-oauth-token",
+      }),
+    })
+  );
+});
+
+test("should omit Authorization header for oauth when access token is missing", async () => {
+  const config = {
+    remoteUrl: "https://example.com/mcp",
+    authType: "oauth" as const,
+  };
+
+  (getSecret as jest.Mock).mockResolvedValue({ remote: {} });
+
+  const proxy = new McpProxy(config);
+
+  mockFetch.mockResolvedValue(createMockResponse({ ok: true }) as any);
+
+  await (proxy as any).forwardRequest("tools/list");
+
+  const callArgs = mockFetch.mock.calls[0][1];
+  expect((callArgs?.headers as Record<string, string>).Authorization).toBeUndefined();
 });
 
 test("should store session ID from response headers", async () => {

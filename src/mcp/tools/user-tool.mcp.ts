@@ -8,11 +8,9 @@ import type * as types from "../../types";
 import { Mcp } from "../mcp";
 
 import type * as wpCoreTypes from "@rnaga/wp-node/types";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
-type CallBackResult = Awaited<
-  ReturnType<Parameters<McpServer["registerTool"]>[2]>
->;
+type CallBackResult = CallToolResult;
 
 @mcp("user_tool", {
   description: "A tool to operate CRUD operations on WP users.",

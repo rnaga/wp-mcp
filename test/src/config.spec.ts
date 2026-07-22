@@ -251,11 +251,13 @@ test("save should write to .env file when filePath is provided", async () => {
   expect(dotenv.config).toHaveBeenCalledWith({ path: "/test/.env" });
   expect(fs.writeFileSync).toHaveBeenCalledWith(
     "/test/.env",
-    expect.stringContaining("TEST_API_KEY=file-key")
+    expect.stringContaining("TEST_API_KEY=file-key"),
+    expect.objectContaining({ mode: 0o644 })
   );
   expect(fs.writeFileSync).toHaveBeenCalledWith(
     "/test/.env",
-    expect.stringContaining("TEST_ENABLED=false")
+    expect.stringContaining("TEST_ENABLED=false"),
+    expect.objectContaining({ mode: 0o644 })
   );
 });
 

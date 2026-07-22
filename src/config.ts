@@ -215,7 +215,9 @@ export class Config<T extends Record<string, any>> {
 
     if (filePath) {
       // Get existing config for merging when file path is provided
-      require("dotenv").config({ path: filePath });
+      // quiet: true prevents dotenv from writing its banner to stdout, which
+      // would corrupt the MCP stdio JSON-RPC stream
+      require("dotenv").config({ path: filePath, quiet: true });
       const existingConfig = await this.get();
 
       // Merge with existing
@@ -339,7 +341,9 @@ export class Config<T extends Record<string, any>> {
   }
 
   async loadFromEnvFile(filePath: string): Promise<T> {
-    require("dotenv").config({ path: filePath });
+    // quiet: true prevents dotenv from writing its banner to stdout, which
+    // would corrupt the MCP stdio JSON-RPC stream
+    require("dotenv").config({ path: filePath, quiet: true });
     return await this.get();
   }
 }

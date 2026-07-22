@@ -22,14 +22,17 @@ export class Mcps {
   }
 
   static createServer() {
-    const server = new McpServer({
-      name: "sse-server",
-      version: "1.0.0",
-
-      capabilities: {
-        tools: {}, // For tools/list and tools/call
+    const server = new McpServer(
+      {
+        name: "sse-server",
+        version: "1.0.0",
       },
-    });
+      {
+        capabilities: {
+          tools: {}, // For tools/list and tools/call
+        },
+      }
+    );
 
     return server;
   }

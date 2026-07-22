@@ -8,7 +8,7 @@ export const proxyConfig = z.object({
   password: z.string().optional(),
   // Accept either a JSON string or an object for customHeaders
   customHeaders: z
-    .union([z.string(), z.record(z.string())])
+    .union([z.string(), z.record(z.string(), z.string())])
     .transform((val) => {
       if (typeof val === "string") {
         try {

@@ -42,6 +42,7 @@ export class McpProxy {
       {
         capabilities: {
           // We'll dynamically populate capabilities from the target server
+          completions: {},
           logging: {},
           prompts: {},
           resources: {},

@@ -15,6 +15,7 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "typeRoots": ["../dist/types"],
     "paths": {
       "@rnaga/wp-mcp/*": ["./src/*"]

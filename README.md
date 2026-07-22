@@ -104,6 +104,8 @@ flowchart LR
 
    This opens a visual interface at `http://localhost:6274` where you can explore available tools, test them with different arguments, and inspect server responses.
 
+   **Note:** Inspector persists its "Environment Variables" panel in browser storage across sessions. If you previously added a `PATH` entry there while troubleshooting, delete it manually in the UI — a stale value can shadow the environment the server actually needs and won't be overridden by CLI flags or script changes.
+
 Usage reference for CLI flags and environment variables:
 
 | Environment variable                                                                                                                                                                                                                                               | CLI flag                            | Purpose                            | When it is read                                                                                                      |
